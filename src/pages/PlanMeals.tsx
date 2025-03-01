@@ -1,255 +1,333 @@
 
-import React, { useState } from 'react';
-import BlurredBackground from '@/components/ui/BlurredBackground';
-import RecipeCard, { RecipeType } from '@/components/ui/RecipeCard';
-import { motion } from 'framer-motion';
-import { Calendar, ShoppingCart, Filter, Plus, Check, Clock, ArrowRight } from 'lucide-react';
-import { toast } from "sonner";
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CheckCircle, CalendarIcon, Plus, ListChecks, Utensils } from "lucide-react";
+import { format } from "date-fns";
+import useInventory from "@/hooks/useInventory";
+import BlurredBackground from "@/components/ui/BlurredBackground";
+import { motion } from "framer-motion";
 
-type MealTime = 'breakfast' | 'lunch' | 'dinner';
-type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-
-interface MealPlan {
-  day: DayOfWeek;
-  meals: Record<MealTime, RecipeType | null>;
-}
-
-const MOCK_RECIPES: RecipeType[] = [
-  {
-    id: '1',
-    title: 'Greek Yogurt with Berries',
-    description: 'A quick and healthy breakfast with protein-rich yogurt and fresh berries.',
-    cookTime: 5,
-    servings: 1,
-    difficulty: 'easy',
-    cuisine: 'American',
-    ingredients: ['greek yogurt', 'berries', 'honey', 'granola'],
-  },
-  {
-    id: '2',
-    title: 'Chicken Caesar Salad',
-    description: 'A classic Caesar salad with grilled chicken, romaine lettuce, and parmesan cheese.',
-    cookTime: 20,
-    servings: 2,
-    difficulty: 'easy',
-    cuisine: 'Italian',
-    ingredients: ['chicken breast', 'romaine lettuce', 'parmesan cheese', 'croutons', 'caesar dressing'],
-  },
-  {
-    id: '3',
-    title: 'Beef Stir Fry',
-    description: 'A quick and flavorful beef stir fry with vegetables and a savory sauce.',
-    cookTime: 25,
-    servings: 4,
-    difficulty: 'medium',
-    cuisine: 'Asian',
-    ingredients: ['beef', 'bell peppers', 'broccoli', 'carrots', 'soy sauce', 'ginger', 'garlic'],
-  },
-  {
-    id: '4',
-    title: 'Avocado Toast',
-    description: 'Simple and delicious avocado toast with a sprinkle of salt and red pepper flakes.',
-    cookTime: 10,
-    servings: 1,
-    difficulty: 'easy',
-    cuisine: 'American',
-    ingredients: ['bread', 'avocado', 'salt', 'red pepper flakes', 'olive oil'],
-  },
-  {
-    id: '5',
-    title: 'Quinoa Bowl',
-    description: 'A nutritious quinoa bowl with roasted vegetables and tahini dressing.',
-    cookTime: 30,
-    servings: 2,
-    difficulty: 'medium',
-    cuisine: 'Mediterranean',
-    ingredients: ['quinoa', 'sweet potato', 'chickpeas', 'kale', 'tahini', 'lemon juice'],
-  },
-  {
-    id: '6',
-    title: 'Pasta Primavera',
-    description: 'A light pasta dish with spring vegetables and a touch of lemon.',
-    cookTime: 25,
-    servings: 4,
-    difficulty: 'easy',
-    cuisine: 'Italian',
-    ingredients: ['pasta', 'asparagus', 'peas', 'cherry tomatoes', 'parmesan cheese', 'lemon'],
-  },
+const mealPlannerSteps = [
+  "Select a date range for your meal plan",
+  "Choose your preferred cuisines",
+  "Set dietary preferences",
+  "Review and customize your plan"
 ];
 
-const DAYS_OF_WEEK: DayOfWeek[] = [
-  'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
-];
-
-const MEAL_TIMES: MealTime[] = ['breakfast', 'lunch', 'dinner'];
+type MealPlan = {
+  date: Date;
+  meals: {
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+    snacks: string[];
+  };
+};
 
 const PlanMeals = () => {
-  // Initialize meal plan with empty slots
-  const [mealPlan, setMealPlan] = useState<MealPlan[]>(() => 
-    DAYS_OF_WEEK.map(day => ({
-      day,
-      meals: {
-        breakfast: null,
-        lunch: null,
-        dinner: null,
-      },
-    }))
-  );
-  
-  const [activeDay, setActiveDay] = useState<DayOfWeek>('monday');
-  const [activeMealTime, setActiveMealTime] = useState<MealTime>('breakfast');
-  
-  const handleSelectRecipe = (recipe: RecipeType) => {
-    setMealPlan(prevPlan => 
-      prevPlan.map(day => 
-        day.day === activeDay 
-          ? { ...day, meals: { ...day.meals, [activeMealTime]: recipe } }
-          : day
-      )
-    );
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [step, setStep] = useState(1);
+  const [preferences, setPreferences] = useState<string[]>([]);
+  const [cuisineType, setCuisineType] = useState<string>("");
+  const [generatedPlan, setGeneratedPlan] = useState<MealPlan[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { inventory } = useInventory();
+
+  const availableIngredients = inventory.map(item => item.name);
+
+  // Cuisines options
+  const cuisines = [
+    "Italian", "Mexican", "Asian", "Mediterranean", 
+    "Indian", "American", "French", "Middle Eastern"
+  ];
+
+  // Preference options  
+  const preferenceOptions = [
+    "Vegetarian", "Vegan", "Low Carb", "High Protein", 
+    "Gluten Free", "Dairy Free", "Low Calorie", "Keto"
+  ];
+
+  const handleNext = () => {
+    if (step < 4) {
+      setStep(step + 1);
+    } else {
+      handleGeneratePlan();
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const handleGeneratePlan = () => {
+    setIsGenerating(true);
     
-    toast.success(`Added ${recipe.title} to ${activeDay}'s ${activeMealTime}`);
-  };
-  
-  const handleClearMeal = (day: DayOfWeek, mealTime: MealTime) => {
-    setMealPlan(prevPlan => 
-      prevPlan.map(d => 
-        d.day === day 
-          ? { ...d, meals: { ...d.meals, [mealTime]: null } }
-          : d
-      )
-    );
-  };
-  
-  const activeDayPlan = mealPlan.find(day => day.day === activeDay);
-  
-  const getShoppingList = () => {
-    // Here you would generate a shopping list from your meal plan
-    toast.success("Shopping list generated! Check the inventory tab for missing items.");
-  };
-  
-  return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-        <div>
-          <h1 className="text-4xl font-bold">Meal Planning</h1>
-          <p className="text-muted-foreground mt-2">
-            Plan your meals for the week and generate a shopping list
-          </p>
-        </div>
-        
-        <div className="flex gap-2">
-          <button className="p-2 rounded-lg glass-card">
-            <Filter className="h-5 w-5" />
-          </button>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-4 py-2 rounded-lg bg-primary text-white flex items-center"
-            onClick={getShoppingList}
-          >
-            <ShoppingCart className="h-5 w-5 mr-2" />
-            <span>Generate Shopping List</span>
-          </motion.button>
-        </div>
-      </div>
+    // Simulate API call with setTimeout
+    setTimeout(() => {
+      // Sample generated meal plan
+      const samplePlan: MealPlan[] = [
+        {
+          date: new Date(),
+          meals: {
+            breakfast: "Avocado Toast with Eggs",
+            lunch: "Quinoa Salad with Grilled Chicken",
+            dinner: "Baked Salmon with Roasted Vegetables",
+            snacks: ["Greek Yogurt with Berries", "Almonds"]
+          }
+        },
+        {
+          date: new Date(Date.now() + 86400000), // +1 day
+          meals: {
+            breakfast: "Overnight Oats with Fruit",
+            lunch: "Mediterranean Wrap",
+            dinner: "Vegetable Stir Fry with Tofu",
+            snacks: ["Hummus with Carrots", "Apple with Peanut Butter"]
+          }
+        },
+        {
+          date: new Date(Date.now() + 172800000), // +2 days
+          meals: {
+            breakfast: "Smoothie Bowl",
+            lunch: "Lentil Soup with Whole Grain Bread",
+            dinner: "Stuffed Bell Peppers",
+            snacks: ["Trail Mix", "Cottage Cheese with Fruit"]
+          }
+        }
+      ];
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <BlurredBackground className="p-4">
-            <div className="flex items-center mb-4">
-              <Calendar className="h-5 w-5 mr-2" />
-              <h2 className="text-xl font-semibold">Weekly Plan</h2>
+      setGeneratedPlan(samplePlan);
+      setIsGenerating(false);
+    }, 2000);
+  };
+
+  const togglePreference = (pref: string) => {
+    if (preferences.includes(pref)) {
+      setPreferences(preferences.filter(p => p !== pref));
+    } else {
+      setPreferences([...preferences, pref]);
+    }
+  };
+
+  const renderStepContent = () => {
+    switch(step) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="flex flex-col space-y-2">
+              <Label htmlFor="date">Select Planning Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        );
+        
+      case 2:
+        return (
+          <div className="space-y-4">
+            <Label>Select Cuisine Types</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {cuisines.map((cuisine) => (
+                <Button
+                  key={cuisine}
+                  variant={cuisineType === cuisine ? "default" : "outline"}
+                  className="justify-start"
+                  onClick={() => setCuisineType(cuisine)}
+                >
+                  {cuisine}
+                </Button>
+              ))}
+            </div>
+          </div>
+        );
+        
+      case 3:
+        return (
+          <div className="space-y-4">
+            <Label>Select Dietary Preferences</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {preferenceOptions.map((pref) => (
+                <Button
+                  key={pref}
+                  variant={preferences.includes(pref) ? "default" : "outline"}
+                  className="justify-start"
+                  onClick={() => togglePreference(pref)}
+                >
+                  {pref}
+                </Button>
+              ))}
+            </div>
+          </div>
+        );
+        
+      case 4:
+        return (
+          <div className="space-y-4">
+            <div className="rounded-lg border p-3">
+              <h3 className="font-medium">Planning Date</h3>
+              <p className="text-sm text-muted-foreground">{date ? format(date, "PPP") : "Not selected"}</p>
             </div>
             
-            <div className="space-y-6">
-              {mealPlan.map((day) => (
-                <div key={day.day} className="space-y-2">
-                  <h3 className="font-medium capitalize">{day.day}</h3>
-                  
-                  <div className="space-y-2">
-                    {MEAL_TIMES.map((mealTime) => {
-                      const recipe = day.meals[mealTime];
-                      return (
-                        <div 
-                          key={mealTime}
-                          className={`p-3 rounded-lg border transition-all ${
-                            activeDay === day.day && activeMealTime === mealTime
-                              ? 'border-primary bg-primary/5'
-                              : 'border-border hover:border-primary/50'
-                          }`}
-                          onClick={() => {
-                            setActiveDay(day.day);
-                            setActiveMealTime(mealTime);
-                          }}
-                        >
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm capitalize">{mealTime}</span>
-                            {recipe && (
-                              <button 
-                                className="text-muted-foreground hover:text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleClearMeal(day.day, mealTime);
-                                }}
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            )}
-                          </div>
-                          
-                          {recipe ? (
-                            <div className="mt-1">
-                              <div className="font-medium">{recipe.title}</div>
-                              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                                <Clock className="h-3 w-3 mr-1" />
-                                <span>{recipe.cookTime} min</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center text-muted-foreground text-sm mt-1">
-                              <Plus className="h-4 w-4 mr-1" />
-                              <span>Add meal</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+            <div className="rounded-lg border p-3">
+              <h3 className="font-medium">Cuisine</h3>
+              <p className="text-sm text-muted-foreground">{cuisineType || "Not selected"}</p>
+            </div>
+            
+            <div className="rounded-lg border p-3">
+              <h3 className="font-medium">Preferences</h3>
+              {preferences.length > 0 ? (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {preferences.map(pref => (
+                    <span key={pref} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
+                      {pref}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No preferences selected</p>
+              )}
+            </div>
+            
+            <div className="rounded-lg border p-3">
+              <h3 className="font-medium">Available Ingredients</h3>
+              <p className="text-sm text-muted-foreground">
+                {availableIngredients.length > 0 
+                  ? `${availableIngredients.length} items available in inventory`
+                  : "No ingredients in inventory"}
+              </p>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="container max-w-4xl mx-auto px-4 py-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <BlurredBackground className="px-6 py-8">
+          <h1 className="text-3xl font-bold text-center mb-8">Meal Planner</h1>
+          
+          <div className="mb-8">
+            <div className="flex items-center justify-between">
+              {mealPlannerSteps.map((stepText, idx) => (
+                <div key={idx} className="flex flex-col items-center">
+                  <div className={`h-10 w-10 rounded-full flex items-center justify-center mb-2 ${idx + 1 <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    {idx + 1 < step ? (
+                      <CheckCircle className="h-5 w-5" />
+                    ) : (
+                      <span>{idx + 1}</span>
+                    )}
                   </div>
+                  <span className={`text-xs text-center max-w-[100px] ${idx + 1 <= step ? 'text-primary' : 'text-muted-foreground'}`}>
+                    {stepText}
+                  </span>
                 </div>
               ))}
             </div>
-          </BlurredBackground>
-        </div>
-        
-        <div className="lg:col-span-2">
-          <BlurredBackground className="p-4">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <h2 className="text-xl font-semibold capitalize">
-                  {activeMealTime} Ideas
-                </h2>
-                <ArrowRight className="h-4 w-4 mx-2" />
-                <span className="text-lg capitalize">{activeDay}</span>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>{mealPlannerSteps[step - 1]}</CardTitle>
+              <CardDescription>
+                Step {step} of {mealPlannerSteps.length}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {renderStepContent()}
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button 
+                variant="outline" 
+                onClick={handleBack}
+                disabled={step === 1}
+              >
+                Back
+              </Button>
+              <Button onClick={handleNext}>
+                {step < 4 ? "Next" : "Generate Plan"}
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          {generatedPlan.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4">Your Meal Plan</h2>
+              <div className="grid gap-4 md:grid-cols-3">
+                {generatedPlan.map((day, idx) => (
+                  <Card key={idx} className="hover-scale">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">{format(day.date, "EEEE")}</CardTitle>
+                      <CardDescription>{format(day.date, "MMM d")}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium flex items-center"><Utensils className="h-3 w-3 mr-2" /> Breakfast</h4>
+                        <p className="text-sm text-muted-foreground">{day.meals.breakfast}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium flex items-center"><Utensils className="h-3 w-3 mr-2" /> Lunch</h4>
+                        <p className="text-sm text-muted-foreground">{day.meals.lunch}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium flex items-center"><Utensils className="h-3 w-3 mr-2" /> Dinner</h4>
+                        <p className="text-sm text-muted-foreground">{day.meals.dinner}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium flex items-center"><ListChecks className="h-3 w-3 mr-2" /> Snacks</h4>
+                        <ul className="text-sm text-muted-foreground">
+                          {day.meals.snacks.map((snack, idx) => (
+                            <li key={idx}>{snack}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {MOCK_RECIPES.map((recipe) => (
-                <div key={recipe.id} className="relative">
-                  <RecipeCard recipe={recipe} onClick={handleSelectRecipe} />
-                  {activeDayPlan?.meals[activeMealTime]?.id === recipe.id && (
-                    <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-primary text-white flex items-center justify-center">
-                      <Check className="h-4 w-4" />
-                    </div>
-                  )}
-                </div>
-              ))}
+          )}
+          
+          {isGenerating && (
+            <div className="flex justify-center items-center mt-8">
+              <div className="animate-pulse text-center">
+                <p className="text-lg font-medium">Creating your personalized meal plan...</p>
+                <p className="text-sm text-muted-foreground">This may take a moment</p>
+              </div>
             </div>
-          </BlurredBackground>
-        </div>
-      </div>
+          )}
+        </BlurredBackground>
+      </motion.div>
     </div>
   );
 };
