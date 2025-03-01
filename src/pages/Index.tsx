@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { useInventory } from '@/hooks/useInventory';
 import InventoryItem from '@/components/ui/InventoryItem';
 import ScanModal from '@/components/ui/ScanModal';
 import BlurredBackground from '@/components/ui/BlurredBackground';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, ScanLine, ChefHat } from 'lucide-react';
+import { Plus, Search, Filter, ScanLine, ChefHat, Calendar } from 'lucide-react';
 import { toast } from "sonner";
+import { Link } from 'react-router-dom';
 
 const Inventory = () => {
   const { items, scanItem } = useInventory();
@@ -76,6 +76,17 @@ const Inventory = () => {
             <ScanLine className="h-5 w-5 mr-2" />
             <span>Scan</span>
           </motion.button>
+          
+          <Link to="/future-inventory">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-4 py-2 rounded-lg bg-secondary text-white flex items-center"
+            >
+              <Calendar className="h-5 w-5 mr-2" />
+              <span>Plan Meals</span>
+            </motion.button>
+          </Link>
         </div>
       </div>
       

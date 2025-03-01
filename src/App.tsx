@@ -12,6 +12,7 @@ import CookedItems from "./pages/CookedItems";
 import DietaryPreferences from "./pages/DietaryPreferences";
 import RecipeChat from "./pages/RecipeChat";
 import PlanMeals from "./pages/PlanMeals";
+import FutureInventory from "./pages/FutureInventory";
 import NotFound from "./pages/NotFound";
 
 // Layout
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/preferences" element={<DietaryPreferences />} />
               <Route path="/recipe-chat" element={<RecipeChat />} />
               <Route path="/plan-meals" element={<PlanMeals />} />
+              <Route path="/future-inventory" element={<FutureInventory />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatedLayout>
