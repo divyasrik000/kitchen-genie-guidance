@@ -1,162 +1,135 @@
-
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ChefHat, Sparkles } from 'lucide-react';
+import React from 'react';
+import { 
+  BarChart as BarChartIcon, 
+  Calendar as CalendarIcon, 
+  MessageCircle as MessageCircleIcon 
+} from 'lucide-react';
 
 const Home = () => {
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center">
-      <div className="text-center mb-12">
-        <motion.h1 
-          className="text-5xl md:text-6xl font-bold text-balance"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          Welcome to <span className="text-primary">KitchenGenie</span>
-        </motion.h1>
-        <motion.p 
-          className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.8 }}
-        >
-          Your magical kitchen assistant for inventory management and meal planning
-        </motion.p>
+    <div className="pt-24 pb-16 px-4 sm:px-6 max-w-7xl mx-auto">
+      <h1 className="text-4xl font-bold mb-8">Welcome to your kitchen dashboard</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="glass-card p-6 rounded-lg">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center mr-3">
+              <BarChartIcon className="h-5 w-5 text-primary" />
+            </div>
+            <h2 className="text-xl font-semibold">Inventory Stats</h2>
+          </div>
+          <p className="text-muted-foreground mb-2">You have 24 items in your inventory</p>
+          <p className="text-muted-foreground">3 items are expiring soon</p>
+        </div>
+        
+        <div className="glass-card p-6 rounded-lg">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-secondary/20 flex items-center justify-center mr-3">
+              <CalendarIcon className="h-5 w-5 text-secondary" />
+            </div>
+            <h2 className="text-xl font-semibold">Meal Planning</h2>
+          </div>
+          <p className="text-muted-foreground mb-2">You have 2 meals planned for today</p>
+          <p className="text-muted-foreground">5 meals planned for this week</p>
+        </div>
+        
+        <div className="glass-card p-6 rounded-lg">
+          <div className="flex items-center mb-4">
+            <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center mr-3">
+              <MessageCircleIcon className="h-5 w-5 text-accent" />
+            </div>
+            <h2 className="text-xl font-semibold">Recipe Suggestions</h2>
+          </div>
+          <p className="text-muted-foreground mb-2">You can make 8 recipes with your current inventory</p>
+          <p className="text-muted-foreground">Try our recipe chat for personalized suggestions</p>
+        </div>
       </div>
       
-      <div className="w-full max-w-md aspect-square relative">
-        {/* Plate */}
-        <motion.div 
-          className="absolute inset-0 rounded-full bg-accent/30 border-2 border-accent backdrop-blur-sm"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 1.2, duration: 0.8, type: "spring" }}
-        />
-        
-        {/* Genie */}
-        <motion.div
-          className="absolute left-1/2 bottom-0 -translate-x-1/2 z-10"
-          initial={{ y: 300, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 2, duration: 1, type: "spring" }}
-        >
-          <div className="relative">
-            <ChefHat className="h-24 w-24 text-primary" />
-            <Sparkles className="h-6 w-6 text-yellow-400 absolute top-0 right-0" />
+      <div className="glass-card p-6 rounded-lg mb-8">
+        <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <div>
+              <p className="font-medium">Added 2 items to inventory</p>
+              <p className="text-sm text-muted-foreground">Milk, Eggs</p>
+            </div>
+            <span className="text-sm text-muted-foreground">Today, 10:30 AM</span>
           </div>
-        </motion.div>
-        
-        {/* Cloche/Food Cover */}
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-40 w-40 bg-secondary/80 rounded-full"
-          initial={{ y: 0, scale: 1 }}
-          animate={{ 
-            y: [-10, -150],
-            scale: [1, 0.8],
-            opacity: [1, 0]
-          }}
-          transition={{ 
-            delay: 2.8,
-            duration: 1, 
-            times: [0, 1]
-          }}
-        />
-        
-        {/* Steam particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute left-1/2 top-1/2 h-3 w-3 rounded-full bg-white/80"
-            initial={{ x: 0, y: 0, opacity: 0 }}
-            animate={{ 
-              x: Math.random() * 80 - 40,
-              y: -100 - Math.random() * 50,
-              opacity: [0, 1, 0]
-            }}
-            transition={{ 
-              delay: 3 + Math.random() * 0.5,
-              duration: 1 + Math.random(),
-              ease: "easeOut",
-              times: [0, 0.3, 1]
-            }}
-          />
-        ))}
-        
-        {/* Food items appearing */}
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-wrap justify-center gap-2 w-32 h-32"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 3.2, duration: 0.5 }}
-        >
-          {['🥗', '🍗', '🍜', '🥘', '🍔', '🍕', '🥪', '🌮'].map((emoji, i) => (
-            <motion.div
-              key={i}
-              className="text-3xl"
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                delay: 3.2 + (i * 0.1),
-                type: "spring",
-                stiffness: 200
-              }}
-            >
-              {emoji}
-            </motion.div>
-          ))}
-        </motion.div>
-        
-        {/* Call to action */}
-        <motion.div
-          className="absolute left-1/2 -translate-x-1/2 bottom-10 w-full text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 4.5, duration: 0.8 }}
-        >
-          <p className="text-lg font-medium">Let's start cooking!</p>
-          <motion.button
-            className="mt-4 px-6 py-3 bg-primary text-white rounded-lg shadow-lg"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.href = '/'}
-          >
-            Check Your Inventory
-          </motion.button>
-        </motion.div>
+          
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <div>
+              <p className="font-medium">Cooked Spaghetti Bolognese</p>
+              <p className="text-sm text-muted-foreground">Used 5 ingredients</p>
+            </div>
+            <span className="text-sm text-muted-foreground">Yesterday, 7:15 PM</span>
+          </div>
+          
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <div>
+              <p className="font-medium">Created meal plan</p>
+              <p className="text-sm text-muted-foreground">For the next 5 days</p>
+            </div>
+            <span className="text-sm text-muted-foreground">2 days ago</span>
+          </div>
+        </div>
       </div>
       
-      {/* Features */}
-      <motion.div 
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-24"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 4, duration: 0.8 }}
-      >
-        <div className="glass-card p-6">
-          <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-            <BarChart className="h-6 w-6 text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="glass-card p-6 rounded-lg">
+          <h2 className="text-2xl font-semibold mb-4">Expiring Soon</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="h-8 w-8 rounded-full bg-destructive/20 flex items-center justify-center mr-3">
+                  <span className="text-xs font-medium">1d</span>
+                </div>
+                <span>Spinach</span>
+              </div>
+              <span className="text-sm text-muted-foreground">250g</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="h-8 w-8 rounded-full bg-destructive/20 flex items-center justify-center mr-3">
+                  <span className="text-xs font-medium">2d</span>
+                </div>
+                <span>Chicken Breast</span>
+              </div>
+              <span className="text-sm text-muted-foreground">500g</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="h-8 w-8 rounded-full bg-amber-500/20 flex items-center justify-center mr-3">
+                  <span className="text-xs font-medium">3d</span>
+                </div>
+                <span>Greek Yogurt</span>
+              </div>
+              <span className="text-sm text-muted-foreground">1 container</span>
+            </div>
           </div>
-          <h3 className="text-xl font-semibold mb-2">Track Inventory</h3>
-          <p className="text-muted-foreground">Keep track of all your ingredients and their expiry dates.</p>
         </div>
         
-        <div className="glass-card p-6">
-          <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-            <Calendar className="h-6 w-6 text-primary" />
+        <div className="glass-card p-6 rounded-lg">
+          <h2 className="text-2xl font-semibold mb-4">Recipe Suggestions</h2>
+          <div className="space-y-3">
+            <div className="p-3 rounded-lg bg-accent/10 hover:bg-accent/20 cursor-pointer">
+              <p className="font-medium">Chicken Stir Fry</p>
+              <p className="text-sm text-muted-foreground">Uses: Chicken Breast, Bell Peppers, Soy Sauce</p>
+            </div>
+            
+            <div className="p-3 rounded-lg bg-accent/10 hover:bg-accent/20 cursor-pointer">
+              <p className="font-medium">Greek Salad</p>
+              <p className="text-sm text-muted-foreground">Uses: Cucumber, Tomatoes, Feta Cheese</p>
+            </div>
+            
+            <div className="p-3 rounded-lg bg-accent/10 hover:bg-accent/20 cursor-pointer">
+              <p className="font-medium">Spinach and Mushroom Omelette</p>
+              <p className="text-sm text-muted-foreground">Uses: Eggs, Spinach, Mushrooms</p>
+            </div>
           </div>
-          <h3 className="text-xl font-semibold mb-2">Plan Meals</h3>
-          <p className="text-muted-foreground">Plan your meals ahead and automatically generate shopping lists.</p>
         </div>
-        
-        <div className="glass-card p-6">
-          <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-            <MessageCircle className="h-6 w-6 text-primary" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">Recipe Chat</h3>
-          <p className="text-muted-foreground">Get personalized recipe recommendations based on your inventory.</p>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
