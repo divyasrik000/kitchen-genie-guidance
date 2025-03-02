@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChefHat, BarChart, ShoppingCart, Heart, MessageCircle, Menu, X } from 'lucide-react';
+import { ChefHat, BarChart, ShoppingCart, Heart, MessageCircle, Calendar, Menu, X } from 'lucide-react';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   
@@ -15,15 +16,26 @@ const Header: React.FC = () => {
     { name: 'Cooked Items', path: '/cooked-items', icon: <ChefHat className="h-5 w-5" /> },
     { name: 'Preferences', path: '/preferences', icon: <Heart className="h-5 w-5" /> },
     { name: 'Plan Meals', path: '/plan-meals', icon: <ShoppingCart className="h-5 w-5" /> },
+    { name: 'Future Inventory', path: '/future-inventory', icon: <Calendar className="h-5 w-5" /> },
     { name: 'Recipe Chat', path: '/recipe-chat', icon: <MessageCircle className="h-5 w-5" /> },
   ];
+  
+  const handleNavClick = (path: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate(path);
+    setIsMenuOpen(false);
+  };
   
   return (
     <header className="fixed top-0 w-full glass-card z-50 border-b border-white/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
-            <Link to="/" className="flex items-center">
+            <Link 
+              to="/" 
+              className="flex items-center"
+              onClick={(e) => handleNavClick('/', e)}
+            >
               <ChefHat className="h-8 w-8 text-primary" />
               <span className="ml-2 text-xl font-semibold tracking-tight">KitchenGenie</span>
             </Link>
@@ -54,6 +66,7 @@ const Header: React.FC = () => {
                       ? 'bg-primary text-white' 
                       : 'hover:bg-accent/50'
                   }`}
+                  onClick={(e) => handleNavClick(item.path, e)}
                 >
                   {item.icon}
                   <span className="ml-2">{item.name}</span>
@@ -84,7 +97,7 @@ const Header: React.FC = () => {
                     ? 'bg-primary text-white' 
                     : 'hover:bg-accent/50'
                 }`}
-                onClick={() => setIsMenuOpen(false)}
+                onClick={(e) => handleNavClick(item.path, e)}
               >
                 {item.icon}
                 <span className="ml-3">{item.name}</span>

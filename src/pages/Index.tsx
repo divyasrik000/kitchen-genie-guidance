@@ -6,12 +6,13 @@ import BlurredBackground from '@/components/ui/BlurredBackground';
 import { motion } from 'framer-motion';
 import { Plus, Search, Filter, ScanLine, ChefHat, Calendar } from 'lucide-react';
 import { toast } from "sonner";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Inventory = () => {
   const { items, scanItem } = useInventory();
   const [searchTerm, setSearchTerm] = useState('');
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const navigate = useNavigate();
   
   const filteredItems = items.filter(item => 
     item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,16 +78,15 @@ const Inventory = () => {
             <span>Scan</span>
           </motion.button>
           
-          <Link to="/future-inventory">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-4 py-2 rounded-lg bg-secondary text-white flex items-center"
-            >
-              <Calendar className="h-5 w-5 mr-2" />
-              <span>Plan Meals</span>
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 rounded-lg bg-secondary text-white flex items-center"
+            onClick={() => navigate('/future-inventory')}
+          >
+            <Calendar className="h-5 w-5 mr-2" />
+            <span>Plan Meals</span>
+          </motion.button>
         </div>
       </div>
       
