@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +27,6 @@ const Header: React.FC = () => {
   
   const navItems = [
     { name: 'Home', path: '/home', icon: <Home className="h-5 w-5" /> },
-    { name: 'Inventory', path: '/', icon: <BarChart className="h-5 w-5" /> },
     { name: 'Cooked Items', path: '/cooked-items', icon: <ChefHat className="h-5 w-5" /> },
     { name: 'Preferences', path: '/preferences', icon: <Heart className="h-5 w-5" /> },
     { name: 'Plan Meals', path: '/plan-meals', icon: <ShoppingCart className="h-5 w-5" /> },
@@ -124,7 +122,6 @@ const Header: React.FC = () => {
         </div>
       </div>
       
-      {/* Mobile menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
