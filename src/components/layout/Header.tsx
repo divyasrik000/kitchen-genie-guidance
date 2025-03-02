@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChefHat, BarChart, ShoppingCart, Heart, MessageCircle, Calendar, Menu, X } from 'lucide-react';
+import { ChefHat, BarChart, ShoppingCart, Heart, MessageCircle, Calendar, Menu, X, Home } from 'lucide-react';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +12,7 @@ const Header: React.FC = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   
   const navItems = [
+    { name: 'Home', path: '/home', icon: <Home className="h-5 w-5" /> },
     { name: 'Inventory', path: '/', icon: <BarChart className="h-5 w-5" /> },
     { name: 'Cooked Items', path: '/cooked-items', icon: <ChefHat className="h-5 w-5" /> },
     { name: 'Preferences', path: '/preferences', icon: <Heart className="h-5 w-5" /> },
@@ -32,9 +33,9 @@ const Header: React.FC = () => {
         <div className="flex justify-between items-center py-4 md:justify-start md:space-x-10">
           <div className="flex justify-start lg:w-0 lg:flex-1">
             <Link 
-              to="/" 
+              to="/home" 
               className="flex items-center"
-              onClick={(e) => handleNavClick('/', e)}
+              onClick={(e) => handleNavClick('/home', e)}
             >
               <ChefHat className="h-8 w-8 text-primary" />
               <span className="ml-2 text-xl font-semibold tracking-tight">KitchenGenie</span>
@@ -54,7 +55,7 @@ const Header: React.FC = () => {
             </button>
           </div>
           
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex space-x-4">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
@@ -63,7 +64,7 @@ const Header: React.FC = () => {
                   to={item.path} 
                   className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     isActive 
-                      ? 'bg-primary text-white' 
+                      ? 'bg-primary text-white shadow-md' 
                       : 'hover:bg-accent/50'
                   }`}
                   onClick={(e) => handleNavClick(item.path, e)}

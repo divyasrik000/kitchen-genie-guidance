@@ -3,10 +3,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 // Pages
+import Home from "./pages/Home";
 import Index from "./pages/Index";
 import CookedItems from "./pages/CookedItems";
 import DietaryPreferences from "./pages/DietaryPreferences";
@@ -32,6 +33,7 @@ const App = () => (
           <AnimatedLayout>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/cooked-items" element={<CookedItems />} />
               <Route path="/preferences" element={<DietaryPreferences />} />
               <Route path="/recipe-chat" element={<RecipeChat />} />
